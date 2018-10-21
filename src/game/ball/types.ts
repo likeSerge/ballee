@@ -1,6 +1,9 @@
+import { IControlsUpdate } from '../controls/types';
+
 export interface IBall {
   updatePosition(): void;
   onCollision(update: IBallCollisionUpdate): void;
+  onGesture(update: IControlsUpdate): void;
   readonly radius: number;
   x: number;
   y: number;

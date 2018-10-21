@@ -1,5 +1,7 @@
 import { ICanvas } from './types';
 import { IBall } from '../ball/types';
+import { ObstaclePath } from '../collision-detector/types';
+import { ICoordinate } from '../types';
 
 export class Canvas implements ICanvas {
   readonly width: number;
@@ -15,7 +17,11 @@ export class Canvas implements ICanvas {
     this.height = this.element.height;
   }
 
-  drawABall(ball: IBall): void {
+  clear(): void {
+    this.drawingContext.clearRect(0, 0, this.width, this.height);
+  }
+
+  drawBall(ball: IBall): void {
     const { x, y , radius } = ball;
     this.drawingContext.beginPath();
     this.drawingContext.arc(x, y, radius, 0, Math.PI * 2);
@@ -24,7 +30,14 @@ export class Canvas implements ICanvas {
     this.drawingContext.closePath();
   }
 
-  clear(): void {
-    this.drawingContext.clearRect(0, 0, this.width, this.height);
+  drawObstacle(path: ObstaclePath): void {
+    this.drawingContext.beginPath();
+    path.forEach((point: ICoordinate, index: number) => {
+      !index
+        ? this.drawingContext.moveTo(point.x, point.y)
+        : this.drawingContext.lineTo(point.x, point.y);
+    });
+    this.drawingContext.fillStyle = '#141ddd';
+    this.drawingContext.fill();
   }
 }

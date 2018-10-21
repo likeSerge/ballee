@@ -1,11 +1,12 @@
 import { IBall, IBallCollisionUpdate } from './types';
+import { IControlsUpdate } from '../controls/types';
 
 export class Ball implements IBall {
   readonly radius: number = 25;
   x: number = 35;
   y: number = 35;
-  velocityX: number = 0.3;
-  velocityY: number = 0.1;
+  velocityX: number = 1.0;
+  velocityY: number = 1.0;
   readonly bounceEnergyLeft: number = 0.9;
   readonly rollEnergyLeft: number = 0.98;
 
@@ -25,7 +26,12 @@ export class Ball implements IBall {
     this.velocityX += update.dVelocityX;
     this.velocityY += update.dVelocityY;
 
-    this.stabilizeSlowBall();
+    // this.stabilizeSlowBall();
+  }
+
+  onGesture = (update: IControlsUpdate): void => {
+    this.velocityX = update.dVelocityX;
+    this.velocityY = update.dVelocityY;
   }
 
   private updateX(): void {
@@ -41,6 +47,9 @@ export class Ball implements IBall {
   }
 
   private updateVelocityY(): void {
+    if (this.velocityY === 0 && this.x + this.radius >= 520) {
+      return;
+    }
     this.velocityY = this.velocityY + this.accelerationY;
   }
 

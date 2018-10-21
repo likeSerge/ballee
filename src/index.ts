@@ -2,4 +2,4 @@ import { Game } from './game';
 
 const game = new Game();
 
-game.run();
+game.start();
