@@ -1,8 +1,3 @@
-export interface IControls {
-  isActive: boolean;
-  check(): void;
-}
-
 export interface IControlsUpdate {
   dVelocityX: number;
   dVelocityY: number;

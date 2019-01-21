@@ -1,10 +1,12 @@
+import { IPolygon } from '../polygon/types';
 import { ICoordinate } from '../types';
 
-export type ObstaclePath = { 0: ICoordinate, 1: ICoordinate, 2: ICoordinate } & ICoordinate[];
+export interface IBallCollision {
+  ballCenterPoint: ICoordinate;
+  collisionPoint: ICoordinate;
+}
 
-// TODO: separate detection and update
 export interface ICollisionDetector {
-  registerObstacle(path: ObstaclePath): void;
-  checkObstacles(): void;
-  checkBorders(): void;
+  registerPolygonObstacle(polygon: IPolygon): void;
+  checkObstacles(): IBallCollision | false;
 }

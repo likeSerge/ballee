@@ -1,30 +1,19 @@
 import { ControlsUpdateCallback, IControlsUpdate, IGestureControls } from './types';
-import { ICoordinate, pointOnLineProjectionCoordinate } from '../types';
+import { ICoordinate } from '../types';
+import { truncateFraction } from '../utils/decimal';
 
 export class GestureControls implements IGestureControls {
   private readonly listeners: ControlsUpdateCallback[] = [];
+  private readonly sensitivity = 0.05;
   private startPoint: ICoordinate = { x: 0, y: 0 };
 
   constructor() {
-    document.body.addEventListener('touchmove', e => e.preventDefault());
-
-    document.addEventListener('mousedown', this.test);
     document.addEventListener('touchstart', this.startMovement);
-    // document.addEventListener('mouseup', this.endMovement);
     document.addEventListener('touchend', this.endMovement);
   }
 
   subscribe(cb: ControlsUpdateCallback): void {
     this.listeners.push(cb);
-  }
-
-  private test = (): void => {
-    const result = pointOnLineProjectionCoordinate(
-      { x: 3, y: 33 },
-      { x: 0, y: 0 },
-      { x: 1, y: 0 },
-    );
-    console.log(`***${'DEBUG'}*** result :`, result);
   }
 
   private startMovement = (e: TouchEvent): void => {
@@ -43,10 +32,9 @@ export class GestureControls implements IGestureControls {
   }
 
   private calculateUpdate(startPoint: ICoordinate, endPoint: ICoordinate): IControlsUpdate {
-    const controlsSensitivity = 0.05;
     return {
-      dVelocityX: (endPoint.x - startPoint.x) * controlsSensitivity,
-      dVelocityY: (endPoint.y - startPoint.y) * controlsSensitivity,
+      dVelocityX: truncateFraction((endPoint.x - startPoint.x) * this.sensitivity),
+      dVelocityY: truncateFraction((endPoint.y - startPoint.y) * this.sensitivity),
     };
   }
 

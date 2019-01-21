@@ -1,11 +1,15 @@
 import { IBall } from '../ball/types';
-import { ObstaclePath } from '../collision-detector/types';
+import { IPolygon } from '../polygon/types';
+
+export interface ISize {
+  readonly width: number;
+  readonly height: number;
+}
 
 export interface ICanvas {
   readonly element: HTMLCanvasElement;
-  readonly width: number;
-  readonly height: number;
+  readonly size: ISize;
   drawBall(ball: IBall): void;
-  drawObstacle(path: ObstaclePath): void;
+  drawObstacle(polygon: IPolygon): void;
   clear(): void;
 }

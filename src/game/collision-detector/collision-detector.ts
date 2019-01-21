@@ -1,171 +1,106 @@
-import { ICollisionDetector, ObstaclePath } from './types';
-import { ICanvas } from '../canvas/types';
-import { IBall } from '../ball/types';
+import { IBallCollision, ICollisionDetector } from './types';
+import { IBallProps } from '../ball/types';
+import { ICoordinate } from '../types';
 import {
-  ICoordinate,
+  circleSegmentIntersection,
+  isProjectionOnASection,
+  parallelSectionsOnDistance,
   pointOnLineProjectionCoordinate,
-  isPointOnLine,
-  isPointInsideCircle,
-  translatePointThroughPoint,
-} from '../types';
+  squaredDistanceBetweenPoints,
+  twoPointHaveSameCoordinates,
+  twoSegmentsIntersection,
+} from '../utils/geometry';
+import { IPolygon, ISection, PolygonTops } from '../polygon/types';
 
 export class CollisionDetector implements ICollisionDetector {
-  private readonly ball: IBall;
-  private readonly canvas: ICanvas;
-  private readonly obstacles: ObstaclePath[] = [];
+  private readonly ball: IBallProps;
+  private readonly polygonObstacles: IPolygon[] = [];
 
-  constructor(ball: IBall, canvas: ICanvas) {
+  constructor(ball: IBallProps) {
     this.ball = ball;
-    this.canvas = canvas;
   }
 
-  registerObstacle(path: ObstaclePath): void {
-    this.obstacles.push(path);
+  registerPolygonObstacle(polygon: IPolygon): void {
+    this.polygonObstacles.push(polygon);
   }
 
-  checkObstacles(): void {
-    this.obstacles.forEach((obstacle: ObstaclePath) => {
-      this.checkTops(obstacle);
-      this.getObstacleLines(obstacle).forEach(line => this.checkLine(line.start, line.end));
-    });
-  }
-
-  // TODO: class Obstacle
-  // TODO: cache
-  private getObstacleLines(obstacleTops: ObstaclePath): {start: ICoordinate, end: ICoordinate}[] {
-    const result = [];
-    for (let i = 1; i < obstacleTops.length; i += 1) {
-      result.push({
-        start: obstacleTops[i - 1],
-        end: obstacleTops[i],
-      });
-    }
-    result.push({
-      start: obstacleTops[0],
-      end: obstacleTops[obstacleTops.length - 1],
-    });
-    return result;
-  }
-
-  private checkTops(obstacle: ObstaclePath): boolean {
-    const { x, y, radius } = this.ball;
-    obstacle.forEach((point: ICoordinate) => {
-      if (isPointInsideCircle(point, { x, y }, radius)) {
-        this.responseOnCollision(point);
-        return true;
-      }
-    });
-    return false;
-  }
-
-  private checkLine(startPoint: ICoordinate, endPoint: ICoordinate): void {
-    const { x, y, radius } = this.ball;
-    const projection = pointOnLineProjectionCoordinate({ x, y }, startPoint, endPoint);
-    if (
-      !isPointOnLine(projection, startPoint, endPoint) ||
-      !isPointInsideCircle(projection, { x, y }, radius)
-    ) {
-      return;
-    }
-
-    this.responseOnCollision(projection);
-  }
-
-  private responseOnCollision(collisionPoint: ICoordinate): void {
-    const nextVelocities = this.calculateNewVelocities(collisionPoint);
-    const nextCenterCoordinates = this.calculateNewCenterCoordinate(collisionPoint);
-
-    this.ball.onCollision({
-      dVelocityX: nextVelocities.velocityX - this.ball.velocityX,
-      dVelocityY: nextVelocities.velocityY - this.ball.velocityY,
-      dX: nextCenterCoordinates.x - this.ball.x,
-      dY: nextCenterCoordinates.y - this.ball.y,
-    });
-  }
-
-  private calculateNewVelocities(
-    collisionPoint: ICoordinate,
-  ): {velocityX: number, velocityY: number} {
-    const currentVelocityVector = {
-      x: collisionPoint.x - this.ball.velocityX * this.ball.bounceEnergyLeft,
-      y: collisionPoint.y - this.ball.velocityY * this.ball.bounceEnergyLeft,
-    };
-    const currentOnNormalProjection = pointOnLineProjectionCoordinate(
-      currentVelocityVector,
-      { x: this.ball.x, y: this.ball.y },
-      collisionPoint,
-    );
-    const reflectedVelocityVector = translatePointThroughPoint(
-      currentVelocityVector,
-      currentOnNormalProjection,
-    );
-
-    return {
-      velocityX: reflectedVelocityVector.x - collisionPoint.x,
-      velocityY: reflectedVelocityVector.y - collisionPoint.y,
-    };
-  }
-
-  private calculateNewCenterCoordinate(collisionPoint: ICoordinate): ICoordinate {
-    // Rab = sqrt((Xb-Xa)^2 + (Yb-Ya)^2)
-    // k = Rac / Rab
-    // Xc = Xa + (Xb-Xa)*k
-    // Yc = Ya + (Yb-Ya)*k
-    const { x, y, radius } = this.ball;
-    const centerToCollisionLength = Math.sqrt(
-      (x - collisionPoint.x) * (x - collisionPoint.x) +
-      (y - collisionPoint.y) * (y - collisionPoint.y),
-    );
-    const extensionCoefficient = radius / centerToCollisionLength;
-    return {
-      x: collisionPoint.x + (x - collisionPoint.x) * extensionCoefficient,
-      y: collisionPoint.y + (y - collisionPoint.y) * extensionCoefficient,
-    };
-  }
-
-  checkBorders(): void {
-    this.checkBottomBorder();
-    this.checkLeftBorder();
-    this.checkRightBorder();
-  }
-
-  private checkBottomBorder(): void {
-    if (this.ball.y + this.ball.radius >= this.canvas.height) {
-      const dY = (this.canvas.height - this.ball.radius) - this.ball.y;
-      // TODO: check math
-      const dVelocityY = - (
-        this.ball.velocityY + // compensate
-        this.ball.bounceEnergyLeft * this.ball.velocityY + // new velocity after bounce
-        dY / this.ball.velocityY // compensate dY non-zero shift
+  checkObstacles(): IBallCollision | false {
+    const possibleCollisions: IBallCollision[] = [];
+    this.polygonObstacles.forEach((obstacle: IPolygon) => {
+      possibleCollisions.push(
+        ...this.checkPolygon(obstacle),
       );
-      this.ball.onCollision({
-        dY,
-        dVelocityY,
-        dVelocityX: - this.ball.velocityX * (1 - this.ball.rollEnergyLeft),
-        dX: 0,
-      });
+    });
+    if (!possibleCollisions.length) {
+      return false;
     }
+
+    return possibleCollisions
+      .reduce((acc: IBallCollision, cur: IBallCollision) => {
+        const accToBall = squaredDistanceBetweenPoints(this.ball, acc.ballCenterPoint);
+        const curToBall = squaredDistanceBetweenPoints(this.ball, cur.ballCenterPoint);
+        return (curToBall < accToBall) ? cur : acc;
+      });
   }
 
-  private checkLeftBorder(): void {
-    if (this.ball.x - this.ball.radius <= 0) {
-      this.ball.onCollision({
-        dVelocityX: - 2 * this.ball.velocityX * this.ball.bounceEnergyLeft,
-        dVelocityY: - this.ball.velocityY * (1 - this.ball.rollEnergyLeft),
-        dX: this.ball.radius - this.ball.x,
-        dY: 0,
-      });
-    }
+  private checkPolygon(polygon: IPolygon): IBallCollision[] {
+    return [
+      ...this.checkSections(polygon.sections)
+        .filter((collision: IBallCollision) => {
+          return !twoPointHaveSameCoordinates(this.ball, collision.ballCenterPoint);
+        }),
+      ...this.checkTops(polygon.tops)];
   }
 
-  private checkRightBorder(): void {
-    if (this.ball.x + this.ball.radius >= this.canvas.width) {
-      this.ball.onCollision({
-        dVelocityX: - 2 * this.ball.velocityX * this.ball.bounceEnergyLeft,
-        dVelocityY: - this.ball.velocityY * (1 - this.ball.rollEnergyLeft),
-        dX: (this.canvas.width - this.ball.radius) - this.ball.x,
-        dY: 0,
-      });
-    }
+  private checkSections(sections: ISection[]): IBallCollision[] {
+    return sections.reduce(
+      (result: IBallCollision[], section: ISection) => {
+        parallelSectionsOnDistance(section, this.ball.radius)
+          .forEach((parallelSection: ISection) => {
+            const point = twoSegmentsIntersection(this.ballPathSection, parallelSection);
+            if (point) {
+              result.push({
+                ballCenterPoint: point,
+                collisionPoint: pointOnLineProjectionCoordinate(point, section.start, section.end),
+              });
+            }
+          });
+        return result;
+      },
+      [],
+    );
+  }
+
+  private checkTops(tops: PolygonTops): IBallCollision[] {
+    return tops.reduce(
+      (result: IBallCollision[], top: ICoordinate) => {
+        const intersections =
+          circleSegmentIntersection(top, this.ball.radius, this.ballPathSection);
+        if (intersections) {
+          intersections
+            .filter(point => isProjectionOnASection(
+              point,
+              this.ballPathSection.start,
+              this.ballPathSection.end,
+            ))
+            .forEach((point: ICoordinate) => {
+              result.push({
+                ballCenterPoint: point,
+                collisionPoint: top,
+              });
+            });
+        }
+        return result;
+      },
+      [],
+    );
+  }
+
+  private get ballPathSection(): ISection {
+    const { x, y, velocityX, velocityY } = this.ball;
+    return {
+      start: { x, y },
+      end: { x: x + velocityX, y: y + velocityY },
+    };
   }
 }
