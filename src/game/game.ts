@@ -9,50 +9,36 @@ import { GestureControls } from './gesture-controls/gesture-controls';
 import { Polygon } from './polygon/polygon';
 import { ICollisionResponser } from './collision-responser/types';
 import { CollisionResponser } from './collision-responser/collision-responser';
-
-const obstacle = new Polygon([
-  { x: 10, y: 100 },
-  { x: 150, y: 100 },
-  { x: 150, y: 250 },
-  { x: 10, y: 250 },
-]);
-const obstacle2 = new Polygon([
-  { x: 10, y: 300 },
-  { x: 50, y: 270 },
-  { x: 30, y: 350 },
-]);
-const obstacle3 = new Polygon([
-  { x: 70, y: 350 },
-  { x: 100, y: 330 },
-  { x: 200, y: 320 },
-  { x: 125, y: 390 },
-  { x: 80, y: 370 },
-]);
+import { ballConfig, polygonObstaclesConfig } from './config';
+import { IObstacles } from './obstacles/types';
+import { Obstacles } from './obstacles/obstacles';
+import { IPolygon } from './polygon/types';
 
 export class Game {
   private readonly canvas: ICanvas;
   private readonly ball: IBall;
-  private readonly gestureControls: IGestureControls;
+  private readonly obstacles: IObstacles;
   private readonly collisionDetector: ICollisionDetector;
   private readonly collisionResponser: ICollisionResponser;
+  private readonly gestureControls: IGestureControls;
 
   constructor() {
     this.canvas = new Canvas();
-    this.gestureControls = new GestureControls();
-    this.ball = new Ball();
-    this.collisionDetector = new CollisionDetector(this.ball);
+    this.ball = new Ball(ballConfig);
+    this.obstacles = new Obstacles(
+      polygonObstaclesConfig.polygonTops.map(poly => new Polygon(poly)),
+      polygonObstaclesConfig.velocityX,
+      polygonObstaclesConfig.velocityY,
+    );
+    this.collisionDetector = new CollisionDetector(
+      this.ball,
+      this.obstacles,
+      this.canvasAsBorderPolygonObstacle(),
+    );
     this.collisionResponser = new CollisionResponser(this.ball);
+    this.gestureControls = new GestureControls();
 
     this.gestureControls.subscribe(this.ball.onGesture);
-    this.collisionDetector.registerPolygonObstacle(obstacle);
-    this.collisionDetector.registerPolygonObstacle(obstacle2);
-    this.collisionDetector.registerPolygonObstacle(obstacle3);
-    this.collisionDetector.registerPolygonObstacle(new Polygon([
-      { x: 0, y: 0 },
-      { x: this.canvas.size.width, y: 0 },
-      { x: this.canvas.size.width, y: this.canvas.size.height },
-      { x: 0, y: this.canvas.size.height },
-    ]));
   }
 
   start = (): void => {
@@ -69,6 +55,7 @@ export class Game {
     if (collision) {
       this.ball.setProps(this.collisionResponser.ballPropsAfterCollision(collision));
     } else {
+      this.obstacles.update();
       this.ball.setProps({
         ...this.ball,
         x: this.ball.x + this.ball.velocityX,
@@ -76,11 +63,19 @@ export class Game {
       });
     }
 
-    this.canvas.drawObstacle(obstacle);
-    this.canvas.drawObstacle(obstacle2);
-    this.canvas.drawObstacle(obstacle3);
+    this.obstacles.polygons.forEach(this.canvas.drawObstacle);
     this.canvas.drawBall(this.ball);
 
     requestAnimationFrame(this.run);
+  }
+
+  // TODO: move to canvas
+  private canvasAsBorderPolygonObstacle(): IPolygon {
+    return new Polygon([
+      { x: 0, y: 0 },
+      { x: this.canvas.size.width, y: 0 },
+      { x: this.canvas.size.width, y: this.canvas.size.height },
+      { x: 0, y: this.canvas.size.height },
+    ]);
   }
 }

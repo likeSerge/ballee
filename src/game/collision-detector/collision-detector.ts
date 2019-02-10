@@ -11,22 +11,19 @@ import {
   twoSegmentsIntersection,
 } from '../utils/geometry';
 import { IPolygon, ISection, PolygonTops } from '../polygon/types';
+import { IObstaclesProps } from '../obstacles/types';
 
 export class CollisionDetector implements ICollisionDetector {
-  private readonly ball: IBallProps;
-  private readonly polygonObstacles: IPolygon[] = [];
-
-  constructor(ball: IBallProps) {
-    this.ball = ball;
-  }
-
-  registerPolygonObstacle(polygon: IPolygon): void {
-    this.polygonObstacles.push(polygon);
-  }
+  constructor(
+    private readonly ball: IBallProps,
+    private readonly obstacles: IObstaclesProps,
+    private readonly canvasObstacle: IPolygon,
+  ) {}
 
   checkObstacles(): IBallCollision | false {
-    const possibleCollisions: IBallCollision[] = [];
-    this.polygonObstacles.forEach((obstacle: IPolygon) => {
+    const possibleCollisions = this.checkSections(this.canvasObstacle.sections, true);
+
+    this.obstacles.polygons.forEach((obstacle: IPolygon) => {
       possibleCollisions.push(
         ...this.checkPolygon(obstacle),
       );
@@ -49,15 +46,23 @@ export class CollisionDetector implements ICollisionDetector {
         .filter((collision: IBallCollision) => {
           return !twoPointHaveSameCoordinates(this.ball, collision.ballCenterPoint);
         }),
-      ...this.checkTops(polygon.tops)];
+      ...this.checkTops(polygon.tops),
+    ];
   }
 
-  private checkSections(sections: ISection[]): IBallCollision[] {
+  private checkSections(
+    sections: ISection[],
+    isCanvas: boolean = false,
+  ): IBallCollision[] {
     return sections.reduce(
       (result: IBallCollision[], section: ISection) => {
         parallelSectionsOnDistance(section, this.ball.radius)
           .forEach((parallelSection: ISection) => {
-            const point = twoSegmentsIntersection(this.ballPathSection, parallelSection);
+            const point = twoSegmentsIntersection(this.ballPathSection, parallelSection)
+              || !isCanvas && twoSegmentsIntersection(
+                this.ballPathEquivalentToObstacleMovement,
+                parallelSection,
+              );
             if (point) {
               result.push({
                 ballCenterPoint: point,
@@ -75,7 +80,12 @@ export class CollisionDetector implements ICollisionDetector {
     return tops.reduce(
       (result: IBallCollision[], top: ICoordinate) => {
         const intersections =
-          circleSegmentIntersection(top, this.ball.radius, this.ballPathSection);
+          circleSegmentIntersection(top, this.ball.radius, this.ballPathSection)
+          || circleSegmentIntersection(
+            top,
+            this.ball.radius,
+            this.ballPathEquivalentToObstacleMovement,
+          );
         if (intersections) {
           intersections
             .filter(point => isProjectionOnASection(
@@ -101,6 +111,25 @@ export class CollisionDetector implements ICollisionDetector {
     return {
       start: { x, y },
       end: { x: x + velocityX, y: y + velocityY },
+    };
+  }
+
+  // TODO: collision point lies on obstacle before movement in current realization
+  // Need to decide, if we need more accuracy here
+  /**
+   * obst----->
+   *    |    |
+   *    |  <-----ball
+   *    |    x          - real collision point(between ball's and obstacle's path)
+   *    x               - calculated collision point(on obstacle)
+   */
+  private get ballPathEquivalentToObstacleMovement(): ISection {
+    return {
+      start: this.ballPathSection.end,
+      end: {
+        x: this.ballPathSection.end.x - this.obstacles.velocityX,
+        y: this.ballPathSection.end.y - this.obstacles.velocityY,
+      },
     };
   }
 }

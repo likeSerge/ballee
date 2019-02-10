@@ -8,12 +8,7 @@ export interface IBallProps {
   velocityY: number;
 }
 
-export interface IBall {
+export interface IBall extends IBallProps {
   setProps(ballProps: IBallProps): void;
   onGesture(update: IControlsUpdate): void;
-  readonly radius: number;
-  x: number;
-  y: number;
-  velocityX: number;
-  velocityY: number;
 }

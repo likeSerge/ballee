@@ -31,7 +31,7 @@ export class Canvas implements ICanvas {
     this.drawingContext.closePath();
   }
 
-  drawObstacle(polygon: IPolygon): void {
+  drawObstacle = (polygon: IPolygon): void => {
     this.drawingContext.beginPath();
     polygon.tops.forEach((point: ICoordinate, index: number) => {
       !index
