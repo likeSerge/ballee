@@ -2,13 +2,12 @@ import { IBallCollision, ICollisionDetector } from './types';
 import { IBallProps } from '../ball/types';
 import { ICoordinate } from '../types';
 import {
-  circleSegmentIntersection,
-  isProjectionOnASection,
   parallelSectionsOnDistance,
   pointOnLineProjectionCoordinate,
   squaredDistanceBetweenPoints,
   twoPointHaveSameCoordinates,
   twoSegmentsIntersection,
+  circleSegmentIntersection,
 } from '../utils/geometry';
 import { IPolygon, ISection, PolygonTops } from '../polygon/types';
 import { IObstaclesProps } from '../obstacles/types';
@@ -20,8 +19,18 @@ export class CollisionDetector implements ICollisionDetector {
     private readonly canvasObstacle: IPolygon,
   ) {}
 
+  checkCanvas(): IBallCollision | false {
+    const sectionsCollisions = this.checkSections(this.canvasObstacle.sections, true);
+    return sectionsCollisions.length > 0 &&
+      sectionsCollisions.reduce((acc: IBallCollision, cur: IBallCollision) => {
+        const accToBall = squaredDistanceBetweenPoints(this.ball, acc.ballCenterPoint);
+        const curToBall = squaredDistanceBetweenPoints(this.ball, cur.ballCenterPoint);
+        return (curToBall < accToBall) ? cur : acc;
+      });
+  }
+
   checkObstacles(): IBallCollision | false {
-    const possibleCollisions = this.checkSections(this.canvasObstacle.sections, true);
+    const possibleCollisions: IBallCollision[] = [];
 
     this.obstacles.polygons.forEach((obstacle: IPolygon) => {
       possibleCollisions.push(
@@ -67,6 +76,7 @@ export class CollisionDetector implements ICollisionDetector {
               result.push({
                 ballCenterPoint: point,
                 collisionPoint: pointOnLineProjectionCoordinate(point, section.start, section.end),
+                isCanvasCollision: isCanvas,
               });
             }
           });
@@ -79,27 +89,22 @@ export class CollisionDetector implements ICollisionDetector {
   private checkTops(tops: PolygonTops): IBallCollision[] {
     return tops.reduce(
       (result: IBallCollision[], top: ICoordinate) => {
-        const intersections =
-          circleSegmentIntersection(top, this.ball.radius, this.ballPathSection)
-          || circleSegmentIntersection(
+        const intersections = [
+          ...circleSegmentIntersection(top, this.ball.radius, this.ballPathSection),
+          ...circleSegmentIntersection(
             top,
             this.ball.radius,
             this.ballPathEquivalentToObstacleMovement,
-          );
-        if (intersections) {
-          intersections
-            .filter(point => isProjectionOnASection(
-              point,
-              this.ballPathSection.start,
-              this.ballPathSection.end,
-            ))
-            .forEach((point: ICoordinate) => {
-              result.push({
-                ballCenterPoint: point,
-                collisionPoint: top,
-              });
-            });
-        }
+          ),
+        ];
+        intersections.forEach((point: ICoordinate) => {
+          result.push({
+            ballCenterPoint: point,
+            collisionPoint: top,
+            isCanvasCollision: false,
+          });
+        });
+
         return result;
       },
       [],

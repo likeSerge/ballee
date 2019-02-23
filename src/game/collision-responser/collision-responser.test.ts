@@ -5,10 +5,12 @@ describe('Collision responser', () => {
   test('It should find collision response, section collision', () => {
     const collisionResponser = new CollisionResponser(
       { x: 0, y: 7, radius: 2, velocityX: 5, velocityY: -2 },
+      { velocityX: 0, velocityY: 0, polygons: [] },
     );
     const result = collisionResponser.ballPropsAfterCollision({
       ballCenterPoint: { x: 2.5, y: 6 },
       collisionPoint: { x: 2.5, y: 4 },
+      isCanvasCollision: false,
     });
 
     expect(result).toEqual({
@@ -23,10 +25,12 @@ describe('Collision responser', () => {
   test('It should find collision response, top collision', () => {
     const collisionResponser = new CollisionResponser(
       { x: 11, y: 12, radius: 7, velocityX: 2, velocityY: -6 },
+      { velocityX: 0, velocityY: 0, polygons: [] },
     );
     const result = collisionResponser.ballPropsAfterCollision({
       ballCenterPoint: { x: 12, y: 9 },
       collisionPoint: { x: 8, y: 3 },
+      isCanvasCollision: false,
     });
 
     expect(result).toEqual({

@@ -35,7 +35,7 @@ export class Game {
       this.obstacles,
       this.canvasAsBorderPolygonObstacle(),
     );
-    this.collisionResponser = new CollisionResponser(this.ball);
+    this.collisionResponser = new CollisionResponser(this.ball, this.obstacles);
     this.gestureControls = new GestureControls();
 
     this.gestureControls.subscribe(this.ball.onGesture);
@@ -51,11 +51,12 @@ export class Game {
 
     // 1) Gravity
 
-    const collision = this.collisionDetector.checkObstacles();
+    const collision = this.collisionDetector.checkCanvas()
+      || this.collisionDetector.checkObstacles();
     if (collision) {
       this.ball.setProps(this.collisionResponser.ballPropsAfterCollision(collision));
     } else {
-      this.obstacles.update();
+      this.obstacles.update(this.canvas.size);
       this.ball.setProps({
         ...this.ball,
         x: this.ball.x + this.ball.velocityX,

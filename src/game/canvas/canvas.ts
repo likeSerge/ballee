@@ -3,10 +3,16 @@ import { IBall } from '../ball/types';
 import { IPolygon } from '../polygon/types';
 import { ICoordinate } from '../types';
 
+// TODO: minimize images with webpack
+const ballImageSRC = require('./images/ball2.png');
+const obstacleImageSRC = require('./images/obstacle2.jpg');
+
 export class Canvas implements ICanvas {
   readonly size: ISize;
   readonly element: HTMLCanvasElement;
   private readonly drawingContext: CanvasRenderingContext2D;
+  private readonly ballImage: HTMLImageElement = new Image();
+  private readonly obstacleImage: HTMLImageElement = new Image();
 
   constructor() {
     this.element = document.getElementById('ballee-game') as HTMLCanvasElement;
@@ -16,6 +22,8 @@ export class Canvas implements ICanvas {
       width: this.element.width,
       height: this.element.height,
     };
+    this.ballImage.src = ballImageSRC;
+    this.obstacleImage.src = obstacleImageSRC;
   }
 
   clear(): void {
@@ -24,11 +32,14 @@ export class Canvas implements ICanvas {
 
   drawBall(ball: IBall): void {
     const { x, y , radius } = ball;
-    this.drawingContext.beginPath();
-    this.drawingContext.arc(x, y, radius, 0, Math.PI * 2);
-    this.drawingContext.fillStyle = '#dd6dce';
-    this.drawingContext.fill();
-    this.drawingContext.closePath();
+
+    this.drawingContext.drawImage(
+      this.ballImage,
+      x - radius,
+      y - radius,
+      radius * 2,
+      radius * 2,
+    );
   }
 
   drawObstacle = (polygon: IPolygon): void => {
@@ -38,7 +49,19 @@ export class Canvas implements ICanvas {
         ? this.drawingContext.moveTo(point.x, point.y)
         : this.drawingContext.lineTo(point.x, point.y);
     });
-    this.drawingContext.fillStyle = '#141ddd';
+    // this.drawingContext.fillStyle = '#dd6dce';
+    this.drawingContext.fillStyle = this.drawingContext.createPattern(
+      this.obstacleImage,
+      'repeat',
+    )!;
     this.drawingContext.fill();
+
+    // this.drawingContext.drawImage(
+    //   this.obstacleImage,
+    //   polygon.tops[0].x,
+    //   polygon.tops[0].y,
+    //   20,
+    //   20,
+    // );
   }
 }

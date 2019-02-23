@@ -1,6 +1,6 @@
 import {
   isPointInsideCircle,
-  isProjectionOnASection,
+  isPointOnASegment,
   translatePointThroughPoint,
   pointOnLineProjectionCoordinate,
   squaredDistanceBetweenPoints,
@@ -8,7 +8,8 @@ import {
   degAngleBetweenIntersectedSegments,
   pointsOnLineAtDistance,
   parallelSectionsOnDistance,
-  circleSegmentIntersection,
+  circleLineIntersection,
+  isPointOnASections,
 } from './geometry';
 
 describe('Geometry utils', () => {
@@ -58,25 +59,63 @@ describe('Geometry utils', () => {
       .toBe(8);
   });
 
-  test('It should isProjectionOnASection', () => {
-    expect(isProjectionOnASection(
+  test('It should isPointOnASegment', () => {
+    expect(isPointOnASegment(
       { x: 0, y: 0 },
-      { x: 0, y: 0 },
-      { x: 0, y: 0 },
+      {
+        start: { x: 0, y: 0 },
+        end: { x: 0, y: 0 },
+      },
     ))
       .toBe(true);
-    expect(isProjectionOnASection(
+    expect(isPointOnASegment(
       { x: 7, y: 6 },
-      { x: 2, y: 5 },
-      { x: 12, y: 7 },
+      {
+        start: { x: 2, y: 5 },
+        end: { x: 12, y: 7 },
+      },
     ))
       .toBe(true);
-    expect(isProjectionOnASection(
+    expect(isPointOnASegment(
       { x: -0.1, y: 0 },
-      { x: 0, y: 0 },
-      { x: 3, y: 9 },
+      {
+        start: { x: 0, y: 0 },
+        end: { x: 3, y: 9 },
+      },
     ))
       .toBe(false);
+  });
+
+  test('It should isPointOnASections', () => {
+    expect(isPointOnASections(
+      { x: -0.1, y: 0 },
+      [
+        {
+          start: { x: 0, y: 0 },
+          end: { x: 3, y: 9 },
+        },
+        {
+          start: { x: 1, y: 1 },
+          end: { x: 3, y: 9 },
+        },
+      ],
+    ))
+      .toBe(false);
+
+    expect(isPointOnASections(
+      { x: 7, y: 6 },
+      [
+        {
+          start: { x: 0, y: 10 },
+          end: { x: 10, y: 10 },
+        },
+        {
+          start: { x: 2, y: 5 },
+          end: { x: 12, y: 7 },
+        },
+      ],
+    ))
+      .toBe(true);
   });
 
   test('It should translatePointThroughPoint', () => {
@@ -185,8 +224,8 @@ describe('Geometry utils', () => {
     ]);
   });
 
-  test('It should circleSegmentIntersection', () => {
-    const result = circleSegmentIntersection(
+  test('It should circleLineIntersection', () => {
+    const result = circleLineIntersection(
       { x: 2, y: 2 },
       3,
       { start: { x: 1, y: 6 }, end: { x: 6, y: 1 } },

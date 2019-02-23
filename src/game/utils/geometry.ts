@@ -24,15 +24,22 @@ export function squaredDistanceBetweenPoints(
   );
 }
 
-export function isProjectionOnASection(
+export function isPointOnASegment(
   point: ICoordinate,
-  lineStart: ICoordinate,
-  lineEnd: ICoordinate,
+  section: ISection,
 ): boolean {
-  return point.x >= Math.min(lineStart.x, lineEnd.x) &&
-    point.x <= Math.max(lineStart.x, lineEnd.x) &&
-    point.y >= Math.min(lineStart.y, lineEnd.y) &&
-    point.y <= Math.max(lineStart.y, lineEnd.y);
+  const { start, end } = section;
+  return point.x >= Math.min(start.x, end.x) &&
+    point.x <= Math.max(start.x, end.x) &&
+    point.y >= Math.min(start.y, end.y) &&
+    point.y <= Math.max(start.y, end.y);
+}
+
+export function isPointOnASections(
+  point: ICoordinate,
+  sections: ISection[],
+): boolean {
+  return sections.some(section => isPointOnASegment(point, section));
 }
 
 export function translatePointThroughPoint(
@@ -161,20 +168,26 @@ export function parallelSectionsOnDistance(
   ];
 }
 
-export function circleSegmentIntersection( // TODO: its line
+export function circleSegmentIntersection(
   circleCenter: ICoordinate,
   radius: number,
   segment: ISection,
-): [ ICoordinate, ICoordinate ] | false {
+): ICoordinate[] {
+  return circleLineIntersection(circleCenter, radius, segment)
+    .filter(point => isPointOnASegment(point, segment));
+}
+
+export function circleLineIntersection(
+  circleCenter: ICoordinate,
+  radius: number,
+  segment: ISection,
+): [ ICoordinate, ICoordinate ] | [] {
   const projectionPoint = pointOnLineProjectionCoordinate(
     circleCenter, segment.start, segment.end,
   );
   const squaredDistanceToProjection = squaredDistanceBetweenPoints(projectionPoint, circleCenter);
-  if (
-    // !isProjectionOnASection(projectionPoint, segment.start, segment.end) ||
-    squaredDistanceToProjection > radius * radius
-  ) {
-    return false;
+  if (squaredDistanceToProjection > radius * radius) {
+    return [];
   }
 
   const projectionToIntersectionDistance = Math.sqrt(

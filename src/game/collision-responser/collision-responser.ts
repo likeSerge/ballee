@@ -7,12 +7,15 @@ import {
   translatePointThroughPoint,
 } from '../utils/geometry';
 import { ICoordinate } from '../types';
+import { IObstaclesProps } from '../obstacles/types';
 
 export class CollisionResponser implements ICollisionResponser {
   private readonly ball: IBallProps;
+  private readonly obstacles: IObstaclesProps;
 
-  constructor(ball: IBallProps) {
+  constructor(ball: IBallProps, obstacles: IObstaclesProps) {
     this.ball = ball;
+    this.obstacles = obstacles;
   }
 
   ballPropsAfterCollision(ballCollision: IBallCollision): IBallProps {
@@ -46,6 +49,16 @@ export class CollisionResponser implements ICollisionResponser {
   private getNextVelocities(
     ballCollision: IBallCollision,
   ): { velocityX: number, velocityY: number } {
+    const rawNextVelocities = this.getRawNextVelocities(ballCollision);
+
+    return ballCollision.isCanvasCollision
+      ? rawNextVelocities
+      : this.updateWithObstacleVelocities(rawNextVelocities);
+  }
+
+  private getRawNextVelocities(
+    ballCollision: IBallCollision,
+  ): { velocityX: number, velocityY: number } {
     const mirroredPathFullDistancePoint = pointsOnLineAtDistance(
       ballCollision.ballCenterPoint,
       this.getMirroredPathLinePoint(ballCollision),
@@ -54,6 +67,15 @@ export class CollisionResponser implements ICollisionResponser {
     return {
       velocityX: mirroredPathFullDistancePoint.x - ballCollision.ballCenterPoint.x,
       velocityY: mirroredPathFullDistancePoint.y - ballCollision.ballCenterPoint.y,
+    };
+  }
+
+  private updateWithObstacleVelocities(
+    velocities: { velocityX: number, velocityY: number },
+  ): { velocityX: number, velocityY: number } {
+    return {
+      velocityX: velocities.velocityX + this.obstacles.velocityX,
+      velocityY: velocities.velocityY + this.obstacles.velocityY,
     };
   }
 

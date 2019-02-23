@@ -30,6 +30,7 @@ describe('Collision detection', () => {
     expect(result).toEqual({
       ballCenterPoint: { x: 3.29289321881345, y: 4.70710678118655 },
       collisionPoint: { x: 4, y: 4 },
+      isCanvasCollision: false,
     });
   });
 
@@ -54,6 +55,7 @@ describe('Collision detection', () => {
     expect(result).toEqual({
       ballCenterPoint: { x: 2, y: 4 },
       collisionPoint: { x: 3, y: 3 },
+      isCanvasCollision: false,
     });
   });
 
@@ -78,6 +80,7 @@ describe('Collision detection', () => {
     expect(result).toEqual({
       ballCenterPoint: { x: 1, y: 3 },
       collisionPoint: { x: 2, y: 2 },
+      isCanvasCollision: false,
     });
   });
 
@@ -103,6 +106,7 @@ describe('Collision detection', () => {
     expect(result).toEqual({
       ballCenterPoint: { x: 2.5, y: 6 },
       collisionPoint: { x: 2.5, y: 4 },
+      isCanvasCollision: false,
     });
   });
 
@@ -128,6 +132,7 @@ describe('Collision detection', () => {
     expect(result).toEqual({
       ballCenterPoint: { x: 12.111590127327489, y: 8.665229618017536 },
       collisionPoint: { x: 8, y: 3 },
+      isCanvasCollision: false,
     });
   });
 
@@ -153,6 +158,7 @@ describe('Collision detection', () => {
     expect(result).toEqual({
       ballCenterPoint: { x: 4, y: 1 },
       collisionPoint: { x: 3, y: 1 },
+      isCanvasCollision: false,
     });
   });
 });
