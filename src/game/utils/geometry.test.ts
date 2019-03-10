@@ -84,6 +84,15 @@ describe('Geometry utils', () => {
       },
     ))
       .toBe(false);
+
+    expect(isPointOnASegment(
+      { x: 136.8581096540777, y: 207.23123213123128 },
+      {
+        start: { x: 143.1212302193021, y: 207.23123213123122 },
+        end: { x: 133.1212302193021, y: 207.23123213123122 },
+      },
+    ))
+      .toBe(true);
   });
 
   test('It should isPointOnASections', () => {

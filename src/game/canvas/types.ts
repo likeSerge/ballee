@@ -11,5 +11,7 @@ export interface ICanvas {
   readonly size: ISize;
   drawBall(ball: IBall): void;
   drawObstacle(polygon: IPolygon): void;
+  drawGameScore(score: number): void;
+  drawLives(lives: number): void;
   clear(): void;
 }

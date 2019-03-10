@@ -1,5 +1,4 @@
 import { IPolygon, PolygonTops } from '../polygon/types';
-import { ISize } from '../canvas/types';
 
 export interface IObstaclesProps {
   readonly velocityX: number;
@@ -8,11 +7,12 @@ export interface IObstaclesProps {
 }
 
 export interface IObstacles extends IObstaclesProps {
-  update: (canvasSize: ISize) => void;
+  update: () => void;
 }
 
 export interface IObstaclesConfig {
   polygonTops: PolygonTops[];
   velocityX: number;
   velocityY: number;
+  framesToNewObstacle: number;
 }

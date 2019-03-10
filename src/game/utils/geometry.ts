@@ -28,11 +28,16 @@ export function isPointOnASegment(
   point: ICoordinate,
   section: ISection,
 ): boolean {
+  const CALCULATION_ERROR_THRESHOLD = 10e-10;
   const { start, end } = section;
-  return point.x >= Math.min(start.x, end.x) &&
-    point.x <= Math.max(start.x, end.x) &&
-    point.y >= Math.min(start.y, end.y) &&
-    point.y <= Math.max(start.y, end.y);
+  const minX = Math.min(start.x, end.x);
+  const maxX = Math.max(start.x, end.x);
+  const minY = Math.min(start.y, end.y);
+  const maxY = Math.max(start.y, end.y);
+  return (point.x > minX || Math.abs(point.x - minX) < CALCULATION_ERROR_THRESHOLD) &&
+    (point.x < maxX || Math.abs(point.x - maxX) < CALCULATION_ERROR_THRESHOLD) &&
+    (point.y > minY || Math.abs(point.y - minY) < CALCULATION_ERROR_THRESHOLD) &&
+    (point.y < maxY || Math.abs(point.y - maxY) < CALCULATION_ERROR_THRESHOLD);
 }
 
 export function isPointOnASections(
@@ -132,12 +137,12 @@ export function pointsOnLineAtDistance(
     (linePoint.y - basePoint.y) * (linePoint.y - basePoint.y));
   return {
     forwardPoint: {
-      x: basePoint.x - distance / lineLength * (basePoint.x - linePoint.x),
-      y: basePoint.y - distance / lineLength * (basePoint.y - linePoint.y),
+      x: truncateFraction(basePoint.x - distance / lineLength * (basePoint.x - linePoint.x)),
+      y: truncateFraction(basePoint.y - distance / lineLength * (basePoint.y - linePoint.y)),
     },
     backPoint: {
-      x: basePoint.x + distance / lineLength * (basePoint.x - linePoint.x),
-      y: basePoint.y + distance / lineLength * (basePoint.y - linePoint.y),
+      x: truncateFraction(basePoint.x + distance / lineLength * (basePoint.x - linePoint.x)),
+      y: truncateFraction(basePoint.y + distance / lineLength * (basePoint.y - linePoint.y)),
     },
   };
 }

@@ -8,5 +8,4 @@ export interface IBallCollision {
 
 export interface ICollisionDetector {
   checkObstacles(): IBallCollision | false;
-  checkCanvas(): IBallCollision | false;
 }

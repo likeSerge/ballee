@@ -24,6 +24,7 @@ export class Canvas implements ICanvas {
     };
     this.ballImage.src = ballImageSRC;
     this.obstacleImage.src = obstacleImageSRC;
+    this.drawingContext.font = '30px Arial';
   }
 
   clear(): void {
@@ -55,13 +56,13 @@ export class Canvas implements ICanvas {
       'repeat',
     )!;
     this.drawingContext.fill();
+  }
 
-    // this.drawingContext.drawImage(
-    //   this.obstacleImage,
-    //   polygon.tops[0].x,
-    //   polygon.tops[0].y,
-    //   20,
-    //   20,
-    // );
+  drawGameScore(score: number): void {
+    this.drawingContext.strokeText(`POINTS: ${score}`, 10, 50);
+  }
+
+  drawLives(lives: number): void {
+    this.drawingContext.strokeText(`LIVES: ${lives}`, 175, 50);
   }
 }

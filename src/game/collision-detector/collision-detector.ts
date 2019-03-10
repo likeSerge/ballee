@@ -19,24 +19,15 @@ export class CollisionDetector implements ICollisionDetector {
     private readonly canvasObstacle: IPolygon,
   ) {}
 
-  checkCanvas(): IBallCollision | false {
-    const sectionsCollisions = this.checkSections(this.canvasObstacle.sections, true);
-    return sectionsCollisions.length > 0 &&
-      sectionsCollisions.reduce((acc: IBallCollision, cur: IBallCollision) => {
-        const accToBall = squaredDistanceBetweenPoints(this.ball, acc.ballCenterPoint);
-        const curToBall = squaredDistanceBetweenPoints(this.ball, cur.ballCenterPoint);
-        return (curToBall < accToBall) ? cur : acc;
-      });
-  }
-
   checkObstacles(): IBallCollision | false {
-    const possibleCollisions: IBallCollision[] = [];
+    const possibleCollisions = this.checkCanvas();
 
     this.obstacles.polygons.forEach((obstacle: IPolygon) => {
       possibleCollisions.push(
         ...this.checkPolygon(obstacle),
       );
     });
+
     if (!possibleCollisions.length) {
       return false;
     }
@@ -47,6 +38,10 @@ export class CollisionDetector implements ICollisionDetector {
         const curToBall = squaredDistanceBetweenPoints(this.ball, cur.ballCenterPoint);
         return (curToBall < accToBall) ? cur : acc;
       });
+  }
+
+  private checkCanvas(): IBallCollision[] {
+    return this.checkSections(this.canvasObstacle.sections, true);
   }
 
   private checkPolygon(polygon: IPolygon): IBallCollision[] {

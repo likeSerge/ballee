@@ -3,7 +3,7 @@ import { IBallCollision } from '../collision-detector/types';
 import { IBallProps } from '../ball/types';
 import {
   pointOnLineProjectionCoordinate,
-  pointsOnLineAtDistance,
+  pointsOnLineAtDistance, squaredDistanceBetweenPoints,
   translatePointThroughPoint,
 } from '../utils/geometry';
 import { ICoordinate } from '../types';
@@ -38,12 +38,15 @@ export class CollisionResponser implements ICollisionResponser {
     // const ballPathLengthAfterCollision =
     //   this.ballPathLengthWithoutCollision - ballPathLengthBeforeCollision;
     const ballPathLengthAfterCollision = 0.01;
-
-    return pointsOnLineAtDistance(
+    const possibleBallCentersAfterCollision = pointsOnLineAtDistance(
       ballCollision.ballCenterPoint,
       this.getMirroredPathLinePoint(ballCollision),
       ballPathLengthAfterCollision,
-    ).forwardPoint;
+    );
+
+    return this.isBouncedCollision(ballCollision)
+      ? possibleBallCentersAfterCollision.forwardPoint
+      : possibleBallCentersAfterCollision.backPoint;
   }
 
   private getNextVelocities(
@@ -53,34 +56,54 @@ export class CollisionResponser implements ICollisionResponser {
 
     return ballCollision.isCanvasCollision
       ? rawNextVelocities
-      : this.updateWithObstacleVelocities(rawNextVelocities);
+      : this.updateWithObstacleVelocities(rawNextVelocities, ballCollision);
   }
 
   private getRawNextVelocities(
     ballCollision: IBallCollision,
   ): { velocityX: number, velocityY: number } {
-    const mirroredPathFullDistancePoint = pointsOnLineAtDistance(
+    if (!this.isBouncedCollision(ballCollision)) {
+      return this.ball;
+    }
+
+    const mirroredBallPathFullDistancePoint = pointsOnLineAtDistance(
       ballCollision.ballCenterPoint,
       this.getMirroredPathLinePoint(ballCollision),
       this.ballPathLengthWithoutCollision,
     ).forwardPoint;
+
     return {
-      velocityX: mirroredPathFullDistancePoint.x - ballCollision.ballCenterPoint.x,
-      velocityY: mirroredPathFullDistancePoint.y - ballCollision.ballCenterPoint.y,
+      velocityX: mirroredBallPathFullDistancePoint.x - ballCollision.ballCenterPoint.x,
+      velocityY: mirroredBallPathFullDistancePoint.y - ballCollision.ballCenterPoint.y,
     };
   }
 
   private updateWithObstacleVelocities(
     velocities: { velocityX: number, velocityY: number },
+    ballCollision: IBallCollision,
   ): { velocityX: number, velocityY: number } {
+    const movementFromObstacle = pointsOnLineAtDistance(
+      ballCollision.collisionPoint,
+      ballCollision.ballCenterPoint,
+      this.obstaclePathLength,
+    ).forwardPoint;
     return {
-      velocityX: velocities.velocityX + this.obstacles.velocityX,
-      velocityY: velocities.velocityY + this.obstacles.velocityY,
+      velocityX: velocities.velocityX + (movementFromObstacle.x - ballCollision.collisionPoint.x),
+      velocityY: velocities.velocityY + (movementFromObstacle.y - ballCollision.collisionPoint.y),
     };
   }
 
   private get ballPathLengthWithoutCollision(): number {
     const { velocityX, velocityY } = this.ball;
+    return this.getDistanceByVelocities(velocityX, velocityY);
+  }
+
+  private get obstaclePathLength(): number {
+    const { velocityX, velocityY } = this.obstacles;
+    return this.getDistanceByVelocities(velocityX, velocityY);
+  }
+
+  private getDistanceByVelocities(velocityX: number, velocityY: number): number {
     return Math.sqrt(velocityX * velocityX + velocityY * velocityY);
   }
 
@@ -90,5 +113,28 @@ export class CollisionResponser implements ICollisionResponser {
       pointOnLineProjectionCoordinate(
         this.ball, ballCollision.ballCenterPoint, ballCollision.collisionPoint,
       ));
+  }
+
+  private isBouncedCollision(ballCollision: IBallCollision): boolean {
+    if (!this.ball.velocityX && !this.ball.velocityY) {
+      return true;
+    }
+
+    const ballToCollisionPointDistance2 = squaredDistanceBetweenPoints(
+      ballCollision.collisionPoint,
+      this.ball,
+    );
+    const ballToCollisionPointDistanceAfterMovement2 = squaredDistanceBetweenPoints(
+      ballCollision.collisionPoint,
+      pointsOnLineAtDistance(
+        this.ball,
+        {
+          x: this.ball.x + this.ball.velocityX,
+          y: this.ball.y + this.ball.velocityY,
+        },
+        0.01,
+      ).forwardPoint,
+    );
+    return ballToCollisionPointDistance2 >= ballToCollisionPointDistanceAfterMovement2;
   }
 }

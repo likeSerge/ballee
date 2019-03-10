@@ -13,6 +13,10 @@ import { ballConfig, polygonObstaclesConfig } from './config';
 import { IObstacles } from './obstacles/types';
 import { Obstacles } from './obstacles/obstacles';
 import { IPolygon } from './polygon/types';
+import { IGameScore } from './game-score/types';
+import { GameScore } from './game-score/game-score';
+import { ILives } from './lives/types';
+import { Lives } from './lives/lives';
 
 export class Game {
   private readonly canvas: ICanvas;
@@ -21,6 +25,8 @@ export class Game {
   private readonly collisionDetector: ICollisionDetector;
   private readonly collisionResponser: ICollisionResponser;
   private readonly gestureControls: IGestureControls;
+  private readonly gameScore: IGameScore;
+  private readonly lives: ILives;
 
   constructor() {
     this.canvas = new Canvas();
@@ -29,6 +35,8 @@ export class Game {
       polygonObstaclesConfig.polygonTops.map(poly => new Polygon(poly)),
       polygonObstaclesConfig.velocityX,
       polygonObstaclesConfig.velocityY,
+      polygonObstaclesConfig.framesToNewObstacle,
+      this.canvas.size,
     );
     this.collisionDetector = new CollisionDetector(
       this.ball,
@@ -37,13 +45,10 @@ export class Game {
     );
     this.collisionResponser = new CollisionResponser(this.ball, this.obstacles);
     this.gestureControls = new GestureControls();
+    this.gameScore = new GameScore();
+    this.lives = new Lives();
 
     this.gestureControls.subscribe(this.ball.onGesture);
-  }
-
-  start = (): void => {
-    this.canvas.drawBall(this.ball);
-    this.run();
   }
 
   run = (): void => {
@@ -51,12 +56,13 @@ export class Game {
 
     // 1) Gravity
 
-    const collision = this.collisionDetector.checkCanvas()
-      || this.collisionDetector.checkObstacles();
+    this.obstacles.polygons.forEach(this.canvas.drawObstacle);
+    const collision = this.collisionDetector.checkObstacles();
     if (collision) {
       this.ball.setProps(this.collisionResponser.ballPropsAfterCollision(collision));
+      this.lives.onCollision();
     } else {
-      this.obstacles.update(this.canvas.size);
+      this.obstacles.update();
       this.ball.setProps({
         ...this.ball,
         x: this.ball.x + this.ball.velocityX,
@@ -64,9 +70,12 @@ export class Game {
       });
     }
 
-    this.obstacles.polygons.forEach(this.canvas.drawObstacle);
     this.canvas.drawBall(this.ball);
+    this.canvas.drawGameScore(this.gameScore.score);
+    this.canvas.drawLives(this.lives.current);
 
+    this.gameScore.update();
+    this.lives.onFrame();
     requestAnimationFrame(this.run);
   }
 

@@ -3,7 +3,7 @@ import { IObstaclesConfig } from './obstacles/types';
 
 export const polygonObstaclesConfig: IObstaclesConfig = {
   velocityX: -1.2,
-  velocityY: -0.5,
+  velocityY: 0.5,
   polygonTops: [
     [
       { x: 510, y: 100 },
@@ -24,6 +24,7 @@ export const polygonObstaclesConfig: IObstaclesConfig = {
       { x: 580, y: 370 },
     ],
   ],
+  framesToNewObstacle: 200,
 };
 
 export const ballConfig: IBallProps = {

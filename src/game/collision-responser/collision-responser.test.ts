@@ -1,4 +1,5 @@
 import { CollisionResponser } from './collision-responser';
+import { Polygon } from '../polygon/polygon';
 
 // TODO: see comment in CollisionResponser.getNextCoordinates
 describe('Collision responser', () => {
@@ -14,31 +15,73 @@ describe('Collision responser', () => {
     });
 
     expect(result).toEqual({
-      x: 2.5092847669088525,
-      y: 6.003713906763541,
+      x: 2.50928476690885,
+      y: 6.00371390676354,
       radius: 2,
       velocityX: 5,
       velocityY: 2,
     });
   });
 
-  test('It should find collision response, top collision', () => {
+  test('It should find collision response, top collision bounced', () => {
     const collisionResponser = new CollisionResponser(
-      { x: 11, y: 12, radius: 7, velocityX: 2, velocityY: -6 },
-      { velocityX: 0, velocityY: 0, polygons: [] },
+      { x: 6, y: 1, radius: 2, velocityX: -2, velocityY: 0 },
+      {
+        velocityX: 1,
+        velocityY: 0,
+        polygons: [
+          new Polygon([
+            { x: 0, y: 0 },
+            { x: 0, y: 3 },
+            { x: 3, y: 3 },
+            { x: 3, y: 0 },
+          ]),
+        ],
+      },
     );
     const result = collisionResponser.ballPropsAfterCollision({
-      ballCenterPoint: { x: 12, y: 9 },
-      collisionPoint: { x: 8, y: 3 },
+      ballCenterPoint: { x: 5, y: 1 },
+      collisionPoint: { x: 3, y: 1 },
       isCanvasCollision: false,
     });
 
     expect(result).toEqual({
-      x: 12.009973337235916,
-      y: 9.000729756383116,
-      radius: 7,
-      velocityX: 6.307692307692307,
-      velocityY: 0.46153846153847944,
+      x: 5.01,
+      y: 1,
+      radius: 2,
+      velocityX: 3,
+      velocityY: 0,
+    });
+  });
+
+  test('It should find collision response, top chasing ball', () => {
+    const collisionResponser = new CollisionResponser(
+      { x: 6, y: 1, radius: 2, velocityX: 2, velocityY: 0 },
+      {
+        velocityX: 3,
+        velocityY: 0,
+        polygons: [
+          new Polygon([
+            { x: 0, y: 0 },
+            { x: 0, y: 3 },
+            { x: 3, y: 3 },
+            { x: 3, y: 0 },
+          ]),
+        ],
+      },
+    );
+    const result = collisionResponser.ballPropsAfterCollision({
+      ballCenterPoint: { x: 5, y: 1 },
+      collisionPoint: { x: 3, y: 1 },
+      isCanvasCollision: false,
+    });
+
+    expect(result).toEqual({
+      x: 4.99, // For top chasing ball we take back point, not forward(so -0.01)
+      y: 1,
+      radius: 2,
+      velocityX: 5,
+      velocityY: 0,
     });
   });
 });

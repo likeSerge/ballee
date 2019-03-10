@@ -2,34 +2,67 @@ import { IObstacles } from './types';
 import { IPolygon } from '../polygon/types';
 import { ISize } from '../canvas/types';
 import { Polygon } from '../polygon/polygon';
+import { getRandomInRange } from '../utils/random';
 
 export class Obstacles implements IObstacles {
+  private framesSinceLastObstacleAdded: number = 0;
+
   constructor(
     readonly polygons: IPolygon[],
     readonly velocityX: number,
     readonly velocityY: number,
+    private readonly framesToNewObstacle: number,
+    private readonly canvasSize: ISize,
   ) {}
 
-  update(canvasSize: ISize): void {
+  update(): void {
+    this.moveAndRemovePolygons();
+    this.addNewObstacles();
+    this.framesSinceLastObstacleAdded += 1;
+  }
+
+  private moveAndRemovePolygons(): void {
     this.polygons.forEach((poly) => {
       poly.tops.forEach((top) => {
         top.x = top.x + this.velocityX;
         top.y = top.y + this.velocityY;
       });
 
-      const outOfCanvas = poly.tops.every(top => top.x < 0)
-        || poly.tops.every(top => top.y < 0);
-
-      if (outOfCanvas) {
-        console.log(`***${'DEBUG'}*** 'out' :`, 'out', poly);
-        this.polygons.splice(this.polygons.indexOf(poly), 1);
-
-        this.polygons.push(new Polygon([
-          { x: 310, y: 300 },
-          { x: 350, y: 270 },
-          { x: 330, y: 350 },
-        ]));
-      }
+      this.removeOutOfScreenObstacle(poly);
     });
+  }
+
+  private removeOutOfScreenObstacle(poly: IPolygon): void {
+    const outOfCanvas = poly.tops.every(top => top.x < 0)
+      || poly.tops.every(top => top.y < 0);
+
+    if (outOfCanvas) {
+      this.polygons.splice(this.polygons.indexOf(poly), 1);
+    }
+  }
+
+  private addNewObstacles(): void {
+    if (this.framesSinceLastObstacleAdded >= this.framesToNewObstacle) {
+      this.framesSinceLastObstacleAdded = 0;
+      this.polygons.push(this.generatePolygonObstacle());
+    }
+  }
+
+  private generatePolygonObstacle(): IPolygon {
+    const width = getRandomInRange(10, 20) * this.canvasSize.width / 100;
+    const height = getRandomInRange(5, 35) * this.canvasSize.height / 100;
+    const x = this.canvasSize.width;
+    const y = getRandomInRange(0, this.canvasSize.height - height);
+    // const width = 100;
+    // const height = 100;
+    // const x = this.canvasSize.width;
+    // const y = 100;
+
+    return new Polygon([
+      { x, y },
+      { y, x: x + width },
+      { x: x + width, y: y + height },
+      { x, y: y + height },
+    ]);
   }
 }
