@@ -1,11 +1,11 @@
 import { ControlsUpdateCallback, IControlsUpdate, IGestureControls } from './types';
-import { ICoordinate } from '../types';
+import { IPoint } from '../types';
 import { truncateFraction } from '../utils/decimal';
 
 export class GestureControls implements IGestureControls {
   private readonly listeners: ControlsUpdateCallback[] = [];
   private readonly sensitivity = 0.05;
-  private startPoint: ICoordinate = { x: 0, y: 0 };
+  private startPoint: IPoint = { x: 0, y: 0 };
 
   constructor() {
     document.addEventListener('touchstart', this.startMovement);
@@ -31,7 +31,7 @@ export class GestureControls implements IGestureControls {
     this.notifyListeners(this.calculateUpdate(this.startPoint, endPoint));
   }
 
-  private calculateUpdate(startPoint: ICoordinate, endPoint: ICoordinate): IControlsUpdate {
+  private calculateUpdate(startPoint: IPoint, endPoint: IPoint): IControlsUpdate {
     return {
       dVelocityX: truncateFraction((endPoint.x - startPoint.x) * this.sensitivity),
       dVelocityY: truncateFraction((endPoint.y - startPoint.y) * this.sensitivity),

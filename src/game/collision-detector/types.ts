@@ -1,8 +1,8 @@
-import { ICoordinate } from '../types';
+import { IPoint } from '../types';
 
 export interface IBallCollision {
-  ballCenterPoint: ICoordinate;
-  collisionPoint: ICoordinate;
+  ballCenterPoint: IPoint;
+  collisionPoint: IPoint;
   isCanvasCollision: boolean;
 }
 

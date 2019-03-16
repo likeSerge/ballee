@@ -1,10 +1,10 @@
-import { ICoordinate } from '../types';
+import { IPoint } from '../types';
 import { truncateFraction } from './decimal';
 import { ISection } from '../polygon/types';
 
 export function isPointInsideCircle(
-  point: ICoordinate,
-  circleCenter: ICoordinate,
+  point: IPoint,
+  circleCenter: IPoint,
   radius: number,
 ): boolean {
   if (radius < 0) {
@@ -16,8 +16,8 @@ export function isPointInsideCircle(
 }
 
 export function squaredDistanceBetweenPoints(
-  point1: ICoordinate,
-  point2: ICoordinate,
+  point1: IPoint,
+  point2: IPoint,
 ): number {
   return truncateFraction(
     (point1.x - point2.x) * (point1.x - point2.x) + (point1.y - point2.y) * (point1.y - point2.y),
@@ -25,7 +25,7 @@ export function squaredDistanceBetweenPoints(
 }
 
 export function isPointOnASegment(
-  point: ICoordinate,
+  point: IPoint,
   section: ISection,
 ): boolean {
   const CALCULATION_ERROR_THRESHOLD = 10e-10;
@@ -41,16 +41,16 @@ export function isPointOnASegment(
 }
 
 export function isPointOnASections(
-  point: ICoordinate,
+  point: IPoint,
   sections: ISection[],
 ): boolean {
   return sections.some(section => isPointOnASegment(point, section));
 }
 
 export function translatePointThroughPoint(
-  startPoint: ICoordinate,
-  translationPoint: ICoordinate,
-): ICoordinate {
+  startPoint: IPoint,
+  translationPoint: IPoint,
+): IPoint {
   return {
     x: truncateFraction(translationPoint.x - (startPoint.x - translationPoint.x)),
     y: truncateFraction(translationPoint.y - (startPoint.y - translationPoint.y)),
@@ -58,10 +58,10 @@ export function translatePointThroughPoint(
 }
 
 export function pointOnLineProjectionCoordinate(
-  point: ICoordinate,
-  lineStart: ICoordinate,
-  lineEnd: ICoordinate,
-): ICoordinate {
+  point: IPoint,
+  lineStart: IPoint,
+  lineEnd: IPoint,
+): IPoint {
   const normal = { // Second point of normal line is (0, 0)
     x: lineEnd.y - lineStart.y,
     y: lineStart.x - lineEnd.x,
@@ -80,7 +80,7 @@ export function pointOnLineProjectionCoordinate(
 export function twoSegmentsIntersection(
   section1: ISection,
   section2: ISection,
-): ICoordinate | false {
+): IPoint | false {
   const { x: x1, y: y1 } = section1.start;
   const { x: x2, y: y2 } = section1.end;
   const { x: x3, y: y3 } = section2.start;
@@ -113,9 +113,9 @@ export function twoSegmentsIntersection(
 }
 
 export function degAngleBetweenIntersectedSegments(
-  intersection: ICoordinate,
-  point1: ICoordinate,
-  point2: ICoordinate,
+  intersection: IPoint,
+  point1: IPoint,
+  point2: IPoint,
 ) {
   const dAx = point1.x - intersection.x;
   const dAy = point1.y - intersection.y;
@@ -129,10 +129,10 @@ export function degAngleBetweenIntersectedSegments(
 }
 
 export function pointsOnLineAtDistance(
-  basePoint: ICoordinate,
-  linePoint: ICoordinate,
+  basePoint: IPoint,
+  linePoint: IPoint,
   distance: number,
-): { forwardPoint: ICoordinate, backPoint: ICoordinate } {
+): { forwardPoint: IPoint, backPoint: IPoint } {
   const lineLength = Math.sqrt((linePoint.x - basePoint.x) * (linePoint.x - basePoint.x) +
     (linePoint.y - basePoint.y) * (linePoint.y - basePoint.y));
   return {
@@ -174,19 +174,19 @@ export function parallelSectionsOnDistance(
 }
 
 export function circleSegmentIntersection(
-  circleCenter: ICoordinate,
+  circleCenter: IPoint,
   radius: number,
   segment: ISection,
-): ICoordinate[] {
+): IPoint[] {
   return circleLineIntersection(circleCenter, radius, segment)
     .filter(point => isPointOnASegment(point, segment));
 }
 
 export function circleLineIntersection(
-  circleCenter: ICoordinate,
+  circleCenter: IPoint,
   radius: number,
   segment: ISection,
-): [ ICoordinate, ICoordinate ] | [] {
+): [ IPoint, IPoint ] | [] {
   const projectionPoint = pointOnLineProjectionCoordinate(
     circleCenter, segment.start, segment.end,
   );
@@ -206,6 +206,6 @@ export function circleLineIntersection(
   return [result.forwardPoint, result.backPoint];
 }
 
-export function twoPointHaveSameCoordinates(point1: ICoordinate, point2: ICoordinate): boolean {
+export function twoPointHaveSameCoordinates(point1: IPoint, point2: IPoint): boolean {
   return (point1.x === point2.x) && (point1.y === point2.y);
 }

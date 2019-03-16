@@ -1,6 +1,6 @@
 import { IBallCollision, ICollisionDetector } from './types';
 import { IBallProps } from '../ball/types';
-import { ICoordinate } from '../types';
+import { IPoint } from '../types';
 import {
   parallelSectionsOnDistance,
   pointOnLineProjectionCoordinate,
@@ -83,7 +83,7 @@ export class CollisionDetector implements ICollisionDetector {
 
   private checkTops(tops: PolygonTops): IBallCollision[] {
     return tops.reduce(
-      (result: IBallCollision[], top: ICoordinate) => {
+      (result: IBallCollision[], top: IPoint) => {
         const intersections = [
           ...circleSegmentIntersection(top, this.ball.radius, this.ballPathSection),
           ...circleSegmentIntersection(
@@ -92,7 +92,7 @@ export class CollisionDetector implements ICollisionDetector {
             this.ballPathEquivalentToObstacleMovement,
           ),
         ];
-        intersections.forEach((point: ICoordinate) => {
+        intersections.forEach((point: IPoint) => {
           result.push({
             ballCenterPoint: point,
             collisionPoint: top,

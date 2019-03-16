@@ -6,7 +6,7 @@ import {
   pointsOnLineAtDistance, squaredDistanceBetweenPoints,
   translatePointThroughPoint,
 } from '../utils/geometry';
-import { ICoordinate } from '../types';
+import { IPoint } from '../types';
 import { IObstaclesProps } from '../obstacles/types';
 
 export class CollisionResponser implements ICollisionResponser {
@@ -28,7 +28,7 @@ export class CollisionResponser implements ICollisionResponser {
 
   private getNextCoordinates(
     ballCollision: IBallCollision,
-  ): ICoordinate {
+  ): IPoint {
     /* TODO: on full length after bounce, it can be other collision
     *  Hardcoded to small value to bounce a little, can stick to
      *  collided surface without it*/
@@ -107,7 +107,7 @@ export class CollisionResponser implements ICollisionResponser {
     return Math.sqrt(velocityX * velocityX + velocityY * velocityY);
   }
 
-  private getMirroredPathLinePoint(ballCollision: IBallCollision): ICoordinate {
+  private getMirroredPathLinePoint(ballCollision: IBallCollision): IPoint {
     return translatePointThroughPoint(
       this.ball,
       pointOnLineProjectionCoordinate(

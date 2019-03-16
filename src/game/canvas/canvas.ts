@@ -1,7 +1,7 @@
 import { ICanvas, ISize } from './types';
 import { IBall } from '../ball/types';
 import { IPolygon } from '../polygon/types';
-import { ICoordinate } from '../types';
+import { IPoint } from '../types';
 
 // TODO: minimize images with webpack
 const ballImageSRC = require('./images/ball2.png');
@@ -45,7 +45,7 @@ export class Canvas implements ICanvas {
 
   drawObstacle = (polygon: IPolygon): void => {
     this.drawingContext.beginPath();
-    polygon.tops.forEach((point: ICoordinate, index: number) => {
+    polygon.tops.forEach((point: IPoint, index: number) => {
       !index
         ? this.drawingContext.moveTo(point.x, point.y)
         : this.drawingContext.lineTo(point.x, point.y);
