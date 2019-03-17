@@ -44,7 +44,7 @@ export class CollisionResponser implements ICollisionResponser {
       ballPathLengthAfterCollision,
     );
 
-    return this.isBouncedCollision(ballCollision)
+    return this.isBallMovingFromCollision(ballCollision)
       ? possibleBallCentersAfterCollision.forwardPoint
       : possibleBallCentersAfterCollision.backPoint;
   }
@@ -62,7 +62,7 @@ export class CollisionResponser implements ICollisionResponser {
   private getRawNextVelocities(
     ballCollision: IBallCollision,
   ): { velocityX: number, velocityY: number } {
-    if (!this.isBouncedCollision(ballCollision)) {
+    if (!this.isBallMovingFromCollision(ballCollision)) {
       return this.ball;
     }
 
@@ -82,11 +82,14 @@ export class CollisionResponser implements ICollisionResponser {
     velocities: { velocityX: number, velocityY: number },
     ballCollision: IBallCollision,
   ): { velocityX: number, velocityY: number } {
-    const movementFromObstacle = pointsOnLineAtDistance(
+    const movementFromObstaclePoints = pointsOnLineAtDistance(
       ballCollision.collisionPoint,
       ballCollision.ballCenterPoint,
       this.obstaclePathLength,
-    ).forwardPoint;
+    );
+    const movementFromObstacle = this.isObstacleMovingFromCollision(ballCollision)
+      ? movementFromObstaclePoints.backPoint
+      : movementFromObstaclePoints.forwardPoint;
     return {
       velocityX: velocities.velocityX + (movementFromObstacle.x - ballCollision.collisionPoint.x),
       velocityY: velocities.velocityY + (movementFromObstacle.y - ballCollision.collisionPoint.y),
@@ -115,7 +118,7 @@ export class CollisionResponser implements ICollisionResponser {
       ));
   }
 
-  private isBouncedCollision(ballCollision: IBallCollision): boolean {
+  private isBallMovingFromCollision(ballCollision: IBallCollision): boolean {
     if (!this.ball.velocityX && !this.ball.velocityY) {
       return true;
     }
@@ -136,5 +139,23 @@ export class CollisionResponser implements ICollisionResponser {
       ).forwardPoint,
     );
     return ballToCollisionPointDistance2 >= ballToCollisionPointDistanceAfterMovement2;
+  }
+
+  private isObstacleMovingFromCollision(ballCollision: IBallCollision): boolean {
+    const distanceToNormalCollisionTriangle2 = squaredDistanceBetweenPoints(
+        ballCollision.collisionPoint, ballCollision.ballCenterPoint,
+      ) +
+      squaredDistanceBetweenPoints(
+        { x: 0 , y: 0 },
+        { x: this.obstacles.velocityX , y: this.obstacles.velocityY },
+      );
+    const distanceToRealCollisionTriangle2 = squaredDistanceBetweenPoints(
+      ballCollision.ballCenterPoint,
+      {
+        x: ballCollision.collisionPoint.x + this.obstacles.velocityX,
+        y: ballCollision.collisionPoint.y + this.obstacles.velocityY,
+      },
+    );
+    return distanceToRealCollisionTriangle2 > distanceToNormalCollisionTriangle2;
   }
 }

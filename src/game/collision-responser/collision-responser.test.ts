@@ -84,4 +84,35 @@ describe('Collision responser', () => {
       velocityY: 0,
     });
   });
+
+  test('It should find collision response, ball chasing section', () => {
+    const collisionResponser = new CollisionResponser(
+      { x: 6, y: 2, radius: 2, velocityX: 5, velocityY: 0 },
+      {
+        velocityX: -3,
+        velocityY: 0,
+        polygons: [
+          new Polygon([
+            { x: 0, y: 0 },
+            { x: 0, y: 3 },
+            { x: 3, y: 3 },
+            { x: 3, y: 0 },
+          ]),
+        ],
+      },
+    );
+    const result = collisionResponser.ballPropsAfterCollision({
+      ballCenterPoint: { x: 5, y: 2 },
+      collisionPoint: { x: 3, y: 2 },
+      isCanvasCollision: false,
+    });
+
+    expect(result).toEqual({
+      x: 4.99, // For top chasing ball we take back point, not forward(so -0.01)
+      y: 2,
+      radius: 2,
+      velocityX: 2,
+      velocityY: 0,
+    });
+  });
 });
