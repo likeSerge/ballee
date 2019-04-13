@@ -33,4 +33,5 @@ export const ballConfig: IBallProps = {
   y: 35,
   velocityX: -0.2,
   velocityY: 0.1,
+  bounceCoef: 0.9,
 };

@@ -49,14 +49,14 @@ export class Obstacles implements IObstacles {
   }
 
   private generatePolygonObstacle(): IPolygon {
-    // const width = getRandomInRange(10, 20) * this.canvasSize.width / 100;
-    // const height = getRandomInRange(10, 55) * this.canvasSize.height / 100;
-    // const x = this.canvasSize.width;
-    // const y = getRandomInRange(0, this.canvasSize.height - height);
-    const width = 100;
-    const height = 100;
+    const width = getRandomInRange(10, 20) * this.canvasSize.width / 100;
+    const height = getRandomInRange(10, 55) * this.canvasSize.height / 100;
     const x = this.canvasSize.width;
-    const y = 100;
+    const y = getRandomInRange(0, this.canvasSize.height - height);
+    // const width = 100;
+    // const height = 100;
+    // const x = this.canvasSize.width;
+    // const y = 100;
 
     return new Polygon([
       { x, y },

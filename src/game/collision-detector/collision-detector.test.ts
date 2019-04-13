@@ -11,7 +11,7 @@ const ignoredCanvasObstacle = new Polygon([
 describe('Collision detection', () => {
   test('It should find collision detection point 90deg', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 2, y: 6, radius: 1, velocityX: 5, velocityY: -5 },
+      { x: 2, y: 6, radius: 1, velocityX: 5, velocityY: -5, bounceCoef: 1 },
       {
         velocityX: 0,
         velocityY: 0,
@@ -36,7 +36,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point 45deg', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 2, y: 7, radius: Math.sqrt(2), velocityX: 0, velocityY: -7 },
+      { x: 2, y: 7, radius: Math.sqrt(2), velocityX: 0, velocityY: -7, bounceCoef: 1 },
       {
         velocityX: 0,
         velocityY: 0,
@@ -61,7 +61,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point -45deg', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 0, y: 3, radius: Math.sqrt(2), velocityX: 5, velocityY: 0 },
+      { x: 0, y: 3, radius: Math.sqrt(2), velocityX: 5, velocityY: 0, bounceCoef: 1 },
       {
         velocityX: 0,
         velocityY: 0,
@@ -86,7 +86,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point, pass don\'t cross section', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 0, y: 7, radius: 2, velocityX: 5, velocityY: -2 },
+      { x: 0, y: 7, radius: 2, velocityX: 5, velocityY: -2, bounceCoef: 1 },
       {
         velocityX: 0,
         velocityY: 0,
@@ -112,7 +112,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point, intersection with tops', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 11, y: 12, radius: 7, velocityX: 5, velocityY: -15 },
+      { x: 11, y: 12, radius: 7, velocityX: 5, velocityY: -15, bounceCoef: 1 },
       {
         velocityX: 0,
         velocityY: 0,
@@ -138,7 +138,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point with moving obstacle', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 9, y: 1, radius: 1, velocityX: -5, velocityY: 0 },
+      { x: 9, y: 1, radius: 1, velocityX: -5, velocityY: 0, bounceCoef: 1 },
       {
         velocityX: 3,
         velocityY: 0,
@@ -164,7 +164,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point with moving obstacle, tops', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 17.4, y: 203, radius: 15, velocityX: 2.366, velocityY: -0.64 },
+      { x: 17.4, y: 203, radius: 15, velocityX: 2.366, velocityY: -0.64, bounceCoef: 1 },
       {
         velocityX: -2,
         velocityY: 0,
@@ -190,7 +190,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point with moving obstacle, tops 2', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 5, y: 4, radius: 5, velocityX: 0, velocityY: 1 },
+      { x: 5, y: 4, radius: 5, velocityX: 0, velocityY: 1, bounceCoef: 1 },
       {
         velocityX: -2,
         velocityY: 0,
@@ -216,7 +216,7 @@ describe('Collision detection', () => {
 
   test('It should find collision detection point with moving obstacle, chasing tops', () => {
     const collisionDetector = new CollisionDetector(
-      { x: 3, y: 3, radius: 1, velocityX: 5, velocityY: 5 },
+      { x: 3, y: 3, radius: 1, velocityX: 5, velocityY: 5, bounceCoef: 1 },
       {
         velocityX: 1,
         velocityY: 3,

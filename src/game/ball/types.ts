@@ -6,6 +6,7 @@ export interface IBallProps {
   y: number;
   velocityX: number;
   velocityY: number;
+  readonly bounceCoef: number;
 }
 
 export interface IBall extends IBallProps {

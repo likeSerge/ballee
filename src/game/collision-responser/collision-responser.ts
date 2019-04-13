@@ -23,6 +23,7 @@ export class CollisionResponser implements ICollisionResponser {
       ...this.getNextCoordinates(ballCollision),
       ...this.getNextVelocities(ballCollision),
       radius: this.ball.radius,
+      bounceCoef: this.ball.bounceCoef,
     };
   }
 
@@ -69,7 +70,7 @@ export class CollisionResponser implements ICollisionResponser {
     const mirroredBallPathFullDistancePoint = pointsOnLineAtDistance(
       ballCollision.ballCenterPoint,
       this.getMirroredPathLinePoint(ballCollision),
-      this.ballPathLengthWithoutCollision,
+      this.ballPathLengthWithoutCollision * this.ball.bounceCoef,
     ).forwardPoint;
 
     return {

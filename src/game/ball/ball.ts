@@ -7,6 +7,7 @@ export class Ball implements IBall {
   y: number;
   velocityX: number;
   velocityY: number;
+  readonly bounceCoef: number;
 
   constructor(ballProps: IBallProps) {
     this.radius = ballProps.radius;
@@ -14,6 +15,7 @@ export class Ball implements IBall {
     this.y = ballProps.y;
     this.velocityX = ballProps.velocityX;
     this.velocityY = ballProps.velocityY;
+    this.bounceCoef = ballProps.bounceCoef;
   }
 
   setProps(nextProps: IBallProps): void {

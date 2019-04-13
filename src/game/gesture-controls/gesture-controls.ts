@@ -4,7 +4,7 @@ import { truncateFraction } from '../utils/decimal';
 
 export class GestureControls implements IGestureControls {
   private readonly listeners: ControlsUpdateCallback[] = [];
-  private readonly sensitivity = 0.05;
+  private readonly sensitivity = 0.02;
   private startPoint: IPoint = { x: 0, y: 0 };
 
   constructor() {

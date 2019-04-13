@@ -17,6 +17,8 @@ import { IGameScore } from './game-score/types';
 import { GameScore } from './game-score/game-score';
 import { ILives } from './lives/types';
 import { Lives } from './lives/lives';
+import { IGravityService } from './gravity/types';
+import { GravityService } from './gravity/gravity-service';
 
 export class Game {
   private readonly canvas: ICanvas;
@@ -25,6 +27,7 @@ export class Game {
   private readonly collisionDetector: ICollisionDetector;
   private readonly collisionResponser: ICollisionResponser;
   private readonly gestureControls: IGestureControls;
+  private readonly gravityservice: IGravityService;
   private readonly gameScore: IGameScore;
   private readonly lives: ILives;
 
@@ -44,6 +47,7 @@ export class Game {
       this.canvasAsBorderPolygonObstacle(),
     );
     this.collisionResponser = new CollisionResponser(this.ball, this.obstacles);
+    this.gravityservice = new GravityService(this.ball);
     this.gestureControls = new GestureControls();
     this.gameScore = new GameScore();
     this.lives = new Lives();
@@ -54,9 +58,17 @@ export class Game {
   run = (): void => {
     this.canvas.clear();
 
-    // 1) Gravity
-
+    this.canvas.drawBall(this.ball);
+    this.canvas.drawGameScore(this.gameScore.score);
+    this.canvas.drawLives(this.lives.current);
     this.obstacles.polygons.forEach(this.canvas.drawObstacle);
+
+    if (!this.lives.current) {
+      return;
+    }
+
+    this.ball.setProps(this.gravityservice.ballPropsAfterGravity());
+
     const collision = this.collisionDetector.checkObstacles();
     if (collision) {
       this.ball.setProps(this.collisionResponser.ballPropsAfterCollision(collision));
@@ -69,10 +81,6 @@ export class Game {
         y: this.ball.y + this.ball.velocityY,
       });
     }
-
-    this.canvas.drawBall(this.ball);
-    this.canvas.drawGameScore(this.gameScore.score);
-    this.canvas.drawLives(this.lives.current);
 
     this.gameScore.update();
     this.lives.onFrame();
