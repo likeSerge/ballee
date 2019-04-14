@@ -21,6 +21,10 @@ export class Obstacles implements IObstacles {
     this.framesSinceLastObstacleAdded += 1;
   }
 
+  clear(): void {
+    this.polygons.length = 0;
+  }
+
   private moveAndRemovePolygons(): void {
     this.polygons.forEach((poly) => {
       poly.tops.forEach((top) => {
@@ -42,7 +46,7 @@ export class Obstacles implements IObstacles {
   }
 
   private addNewObstacles(): void {
-    this.velocityX -= 0.005;
+    this.velocityX -= 0.0005;
     if (this.framesSinceLastObstacleAdded >= this.framesToNewObstacle) {
       this.framesSinceLastObstacleAdded = 0;
       this.polygons.push(this.generatePolygonObstacle());

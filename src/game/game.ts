@@ -73,6 +73,9 @@ export class Game {
     if (collision) {
       this.ball.setProps(this.collisionResponser.ballPropsAfterCollision(collision));
       this.lives.onCollision(collision);
+      if (!collision.isCanvasCollision) {
+        this.obstacles.clear();
+      }
     } else {
       this.obstacles.update();
       this.ball.setProps({

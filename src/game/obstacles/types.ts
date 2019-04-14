@@ -7,7 +7,8 @@ export interface IObstaclesProps {
 }
 
 export interface IObstacles extends IObstaclesProps {
-  update: () => void;
+  update(): void;
+  clear(): void;
 }
 
 export interface IObstaclesConfig {

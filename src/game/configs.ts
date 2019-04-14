@@ -33,5 +33,5 @@ export const gestureControlsConfig: IGestureControlsConfig = {
 
 export const livesConfig: ILivesConfig = {
   framesTillAddLife: 200,
-  maxLives: 10,
+  maxLives: 3,
 };
