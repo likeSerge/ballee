@@ -26,7 +26,7 @@ export class Ball implements IBall {
   }
 
   onGesture = (update: IControlsUpdate): void => {
-    this.velocityX = update.dVelocityX;
-    this.velocityY = update.dVelocityY;
+    this.velocityX = this.velocityX + update.nextVelocityX;
+    this.velocityY = update.nextVelocityY;
   }
 }

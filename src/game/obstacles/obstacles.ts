@@ -9,7 +9,7 @@ export class Obstacles implements IObstacles {
 
   constructor(
     readonly polygons: IPolygon[],
-    readonly velocityX: number,
+    public velocityX: number,
     readonly velocityY: number,
     private readonly framesToNewObstacle: number,
     private readonly canvasSize: ISize,
@@ -42,6 +42,7 @@ export class Obstacles implements IObstacles {
   }
 
   private addNewObstacles(): void {
+    this.velocityX -= 0.005;
     if (this.framesSinceLastObstacleAdded >= this.framesToNewObstacle) {
       this.framesSinceLastObstacleAdded = 0;
       this.polygons.push(this.generatePolygonObstacle());
@@ -50,7 +51,7 @@ export class Obstacles implements IObstacles {
 
   private generatePolygonObstacle(): IPolygon {
     const width = getRandomInRange(10, 20) * this.canvasSize.width / 100;
-    const height = getRandomInRange(10, 55) * this.canvasSize.height / 100;
+    const height = getRandomInRange(10, 35) * this.canvasSize.height / 100;
     const x = this.canvasSize.width;
     const y = getRandomInRange(0, this.canvasSize.height - height);
     // const width = 100;

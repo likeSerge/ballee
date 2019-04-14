@@ -9,7 +9,7 @@ import { GestureControls } from './gesture-controls/gesture-controls';
 import { Polygon } from './polygon/polygon';
 import { ICollisionResponser } from './collision-responser/types';
 import { CollisionResponser } from './collision-responser/collision-responser';
-import { ballConfig, polygonObstaclesConfig } from './config';
+import { ballConfig, gestureControlsConfig, livesConfig, polygonObstaclesConfig } from './configs';
 import { IObstacles } from './obstacles/types';
 import { Obstacles } from './obstacles/obstacles';
 import { IPolygon } from './polygon/types';
@@ -35,7 +35,7 @@ export class Game {
     this.canvas = new Canvas();
     this.ball = new Ball(ballConfig);
     this.obstacles = new Obstacles(
-      polygonObstaclesConfig.polygonTops.map(poly => new Polygon(poly)),
+      polygonObstaclesConfig.initialPolygonTops.map(poly => new Polygon(poly)),
       polygonObstaclesConfig.velocityX,
       polygonObstaclesConfig.velocityY,
       polygonObstaclesConfig.framesToNewObstacle,
@@ -48,9 +48,9 @@ export class Game {
     );
     this.collisionResponser = new CollisionResponser(this.ball, this.obstacles);
     this.gravityservice = new GravityService(this.ball);
-    this.gestureControls = new GestureControls();
+    this.gestureControls = new GestureControls(gestureControlsConfig);
     this.gameScore = new GameScore();
-    this.lives = new Lives();
+    this.lives = new Lives(livesConfig);
 
     this.gestureControls.subscribe(this.ball.onGesture);
   }
@@ -72,7 +72,7 @@ export class Game {
     const collision = this.collisionDetector.checkObstacles();
     if (collision) {
       this.ball.setProps(this.collisionResponser.ballPropsAfterCollision(collision));
-      this.lives.onCollision();
+      this.lives.onCollision(collision);
     } else {
       this.obstacles.update();
       this.ball.setProps({

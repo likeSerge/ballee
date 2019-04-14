@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@reactivex/rxjs": "^6.4.0",
     "@types/jest": "^23.3.13",
     "@types/node": "^11.9.4",
     "awesome-typescript-loader": "^5.2.1",
@@ -25,5 +26,8 @@
     "webpack": "^4.29.0",
     "webpack-cli": "^3.2.1",
     "webpack-dev-server": "^3.1.14"
+  },
+  "dependencies": {
+    "rxjs": "^6.4.0"
   }
 }

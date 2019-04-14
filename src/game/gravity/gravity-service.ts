@@ -1,7 +1,7 @@
 import { IGravityService } from './types';
 import { IBallProps } from '../ball/types';
 
-const GRAVITY = 0.05;
+const GRAVITY = 0.15;
 
 export class GravityService implements IGravityService {
   private readonly ball: IBallProps;
